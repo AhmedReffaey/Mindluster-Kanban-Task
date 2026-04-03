@@ -41,17 +41,34 @@ export const CreateTaskForm = () => {
   const [workType, setWorkType] = useState('task');
   const [attachment, setAttachment] = useState(null);
   const [attachmentType, setAttachmentType] = useState(null);
+  const [displayAttachment, setDisplayAttachment] = useState(null);
   const [titleError, setTitleError] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
 
   const markDirty = () => { if (!isDirty) setIsDirty(true); };
 
+  const resetForm = () => {
+    setTitle('');
+    setDescription('');
+    setAssignee('');
+    setColumn('backlog');
+    setPriority('Medium');
+    setWorkType('task');
+    setAttachment(null);
+    setDisplayAttachment(null);
+    setAttachmentType(null);
+    setTitleError(false);
+    setIsDirty(false);
+  };
+
   const handleClose = () => {
     if (isDirty) {
       showConfirm('You have unsaved changes. Discard them?', () => {
+        resetForm();
         closeTaskModal();
       });
     } else {
+      resetForm();
       closeTaskModal();
     }
   };
@@ -61,6 +78,7 @@ export const CreateTaskForm = () => {
     onSuccess: () => {
       queryClient.invalidateQueries(['tasks']);
       showNotification('Task created successfully!', 'success');
+      resetForm();
       closeTaskModal();
     },
     onError: () => {
@@ -84,15 +102,17 @@ export const CreateTaskForm = () => {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      markDirty();
       const isVideo = file.type.startsWith('video/');
+      const objectUrl = URL.createObjectURL(file);
+      setDisplayAttachment(objectUrl);
+      setAttachmentType(isVideo ? 'video' : 'image');
       
       // Route ALL videos and any image > 50KB straight to IndexedDB.
-      // json-server default payload max is ~100KB, so this prevents 500 errors.
       if (isVideo || file.size > 50 * 1024) {
         const fileId = `file_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
         saveFileToDB(fileId, file).then((idbUrl) => {
           setAttachment(idbUrl);
-          setAttachmentType(isVideo ? 'video' : 'image');
           showNotification('File successfully attached!', 'success');
         });
         return;
@@ -102,7 +122,6 @@ export const CreateTaskForm = () => {
       const reader = new FileReader();
       reader.onloadend = () => {
         setAttachment(reader.result);
-        setAttachmentType('image');
       };
       reader.readAsDataURL(file);
     }
@@ -241,12 +260,12 @@ export const CreateTaskForm = () => {
           <Box>
             <Typography variant="subtitle2" fontWeight={600} mb={1} color={c.textSecondary}>Attachment</Typography>
             <Box>
-              {attachment ? (
+              {displayAttachment ? (
                 <Box position="relative" display="inline-block" p={1} border={`1px solid ${c.border}`} borderRadius={2} bgcolor={c.inputBg}>
                   {attachmentType === 'video' ? (
-                    <video src={attachment} width="100%" controls style={{ maxHeight: 200, borderRadius: 4 }} />
+                    <video src={displayAttachment} width="100%" controls style={{ maxHeight: 200, borderRadius: 4 }} />
                   ) : (
-                    <img src={attachment} alt="Preview" style={{ maxWidth: '100%', maxHeight: 200, borderRadius: 4 }} />
+                    <img src={displayAttachment} alt="Preview" style={{ maxWidth: '100%', maxHeight: 200, borderRadius: 4 }} />
                   )}
                   <IconButton size="small" sx={{ position: 'absolute', top: 12, right: 12, backgroundColor: c.cardBg, border: `1px solid ${c.border}`, color: c.textSecondary, '&:hover': { backgroundColor: '#ffebee', color: '#de350b' } }} onClick={() => { setAttachment(null); setAttachmentType(null); }}>
                     <DeleteIcon fontSize="small" />
