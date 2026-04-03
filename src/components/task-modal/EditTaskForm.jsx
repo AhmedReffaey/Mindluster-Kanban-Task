@@ -154,7 +154,8 @@ export const EditTaskForm = ({ task }) => {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const isVideo = file.type.startsWith('video/');
+      const videoExtensions = ['.mp4', '.mov', '.avi', '.mkv', '.webm', '.flv', '.wmv', '.m4v'];
+      const isVideo = file.type.startsWith('video/') || videoExtensions.some(ext => file.name.toLowerCase().endsWith(ext));
       
       // Route ALL videos and any image > 50KB straight to IndexedDB.
       if (isVideo || file.size > 50 * 1024) {
@@ -278,7 +279,7 @@ export const EditTaskForm = ({ task }) => {
               ) : (
                 <Button component="label" variant="outlined" startIcon={<CloudUploadIcon sx={{ fontSize: '1.1rem' }} />} sx={{ color: c.textSecondary, borderColor: c.border, bgcolor: c.inputBg, textTransform: 'none', fontWeight: 600, fontSize: '0.85rem', borderStyle: 'dashed', borderRadius: '8px', py: 1.5, px: 2.5, '&:hover': { backgroundColor: c.hoverBg, borderColor: c.textTertiary } }}>
                   Upload Image or Video
-                  <input type="file" hidden accept="image/*,video/*" onChange={handleFileChange} />
+                  <input type="file" hidden accept="image/*,video/*,.mkv,.avi,.mov,.wmv,.flv,.webm,.m4v" onChange={handleFileChange} />
                 </Button>
               )}
             </Box>

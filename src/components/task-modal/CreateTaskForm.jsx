@@ -103,7 +103,8 @@ export const CreateTaskForm = () => {
     const file = e.target.files[0];
     if (file) {
       markDirty();
-      const isVideo = file.type.startsWith('video/');
+      const videoExtensions = ['.mp4', '.mov', '.avi', '.mkv', '.webm', '.flv', '.wmv', '.m4v'];
+      const isVideo = file.type.startsWith('video/') || videoExtensions.some(ext => file.name.toLowerCase().endsWith(ext));
       const objectUrl = URL.createObjectURL(file);
       setDisplayAttachment(objectUrl);
       setAttachmentType(isVideo ? 'video' : 'image');
@@ -267,14 +268,14 @@ export const CreateTaskForm = () => {
                   ) : (
                     <img src={displayAttachment} alt="Preview" style={{ maxWidth: '100%', maxHeight: 200, borderRadius: 4 }} />
                   )}
-                  <IconButton size="small" sx={{ position: 'absolute', top: 12, right: 12, backgroundColor: c.cardBg, border: `1px solid ${c.border}`, color: c.textSecondary, '&:hover': { backgroundColor: '#ffebee', color: '#de350b' } }} onClick={() => { setAttachment(null); setAttachmentType(null); }}>
+                  <IconButton size="small" sx={{ position: 'absolute', top: 12, right: 12, backgroundColor: c.cardBg, border: `1px solid ${c.border}`, color: c.textSecondary, '&:hover': { backgroundColor: '#ffebee', color: '#de350b' } }} onClick={() => { setAttachment(null); setAttachmentType(null); setDisplayAttachment(null); }}>
                     <DeleteIcon fontSize="small" />
                   </IconButton>
                 </Box>
               ) : (
                 <Button component="label" variant="outlined" fullWidth startIcon={<CloudUploadIcon />} sx={{ color: c.textSecondary, boxShadow: 'none', borderColor: c.border, bgcolor: c.inputBg, py: 2, borderStyle: 'dashed', borderRadius: 2, textTransform: 'none', fontWeight: 600, '&:hover': { backgroundColor: c.hoverBg, borderColor: c.textTertiary } }}>
                   Upload Image or Video
-                  <input type="file" hidden accept="image/*,video/*" onChange={handleFileChange} />
+                  <input type="file" hidden accept="image/*,video/*,.mkv,.avi,.mov,.wmv,.flv,.webm,.m4v" onChange={handleFileChange} />
                 </Button>
               )}
             </Box>
